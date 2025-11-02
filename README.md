@@ -118,6 +118,42 @@ EXEC sp_addlinkedserver
 SELECT * FROM OPENQUERY(ORACLE_LINK, 'SELECT * FROM dual');
 ```
 
+## 📊 Données d'Exemple Incluses
+
+L'environnement est livré avec des données de démonstration prêtes à l'emploi:
+
+### Base de Données: SampleDW
+
+**Tables:**
+- `Customers` - 10 clients français avec coordonnées
+- `Products` - 10 produits électroniques avec prix et stock
+- `Orders` - 10 commandes avec historique
+
+**Vues Analytiques:**
+- `vw_OrderSummary` - Vue complète des commandes avec clients et produits
+- `vw_CustomerOrders` - Statistiques par client
+- `vw_ProductSales` - Performance des ventes par produit
+
+**Procédures Stockées:**
+- `sp_RefreshStagingData` - Rafraîchissement des données de staging
+- `sp_GetSalesByDateRange` - Rapport de ventes par période
+- `sp_GetTopCustomers` - Top N clients par dépenses
+
+### Exemples de Requêtes
+
+```sql
+-- Vue d'ensemble des commandes
+SELECT * FROM dbo.vw_OrderSummary ORDER BY OrderDate DESC;
+
+-- Top 5 clients
+EXEC dbo.sp_GetTopCustomers @TopN = 5;
+
+-- Ventes de janvier 2024
+EXEC dbo.sp_GetSalesByDateRange 
+    @StartDate = '2024-01-01', 
+    @EndDate = '2024-01-31';
+```
+
 ## ⚠️ Notes Importantes
 
 ### SSAS Non Disponible
@@ -158,9 +194,43 @@ chmod +x .devcontainer/setup.sh
 
 ## 📚 Ressources
 
+### Documentation Interne
+- [📖 CONFIGURATION.md](CONFIGURATION.md) - Guide complet de configuration et insertion de données
+- [💾 sql-scripts/README.md](sql-scripts/README.md) - Documentation des scripts SQL
+- [📦 ssis-packages/README.md](ssis-packages/README.md) - Guide SSIS et ETL
+- [📊 data/README.md](data/README.md) - Description des données d'exemple
+
+### Documentation Externe
 - [SQL Server on Linux](https://learn.microsoft.com/en-us/sql/linux/)
+- [SSIS Documentation](https://learn.microsoft.com/en-us/sql/integration-services/)
 - [GitHub Codespaces Docs](https://docs.github.com/en/codespaces)
 - [Docker Compose](https://docs.docker.com/compose/)
+
+---
+
+## ✅ Résumé des Fonctionnalités
+
+✓ **Environnement complet prêt à l'emploi**
+- SQL Server 2022 Developer Edition
+- Oracle Database Free Edition
+- Outils de gestion (sqlcmd, PowerShell, SSIS runtime)
+
+✓ **Données de démonstration incluses**
+- Base de données SampleDW avec 3 tables
+- 30 enregistrements de test (10 clients, 10 produits, 10 commandes)
+- 3 vues analytiques prêtes à l'emploi
+- 3 procédures stockées pour ETL
+
+✓ **Configuration automatisée**
+- Script `quick-setup.sh` pour configuration en une commande
+- Scripts SQL modulaires et réutilisables
+- Documentation complète en français
+
+✓ **Prêt pour le développement MSBI**
+- Structure de projet ETL
+- Répertoires pour packages SSIS
+- Exemples de données CSV
+- Outils de gestion PowerShell
 
 ---
 
