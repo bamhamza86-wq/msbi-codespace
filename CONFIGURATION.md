@@ -221,10 +221,12 @@ CREATE DATABASE SampleDW;
 " -C
 
 # Recréer la structure ETL
-sqlcmd -S localhost -U sa -P Passw0rd123! -d SampleDW -i init-sql-server.sql -C
+sqlcmd -S localhost -U sa -P Passw0rd123! -d SampleDW -i .devcontainer/sql-init/init-sql-server.sql -C
 
-# Recharger tout
-sqlcmd -S localhost -U sa -P Passw0rd123! -d SampleDW -i sql-scripts/setup-complete.sql -C
+# Recharger tout (depuis le répertoire sql-scripts)
+cd sql-scripts
+sqlcmd -S localhost -U sa -P Passw0rd123! -d SampleDW -i setup-complete.sql -C
+cd ..
 ```
 
 ### Ajouter des Données Personnalisées

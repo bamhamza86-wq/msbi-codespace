@@ -1,5 +1,10 @@
 -- Complete MSBI Setup Script
 -- This script runs all setup steps in the correct order
+--
+-- IMPORTANT: This script must be run from the sql-scripts directory
+-- because it uses :r commands with relative paths
+--
+-- Usage: cd sql-scripts && sqlcmd -S localhost -U sa -P Passw0rd123! -d SampleDW -i setup-complete.sql -C
 
 PRINT '===========================================';
 PRINT 'MSBI Complete Setup Script';

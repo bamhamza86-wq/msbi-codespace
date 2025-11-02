@@ -42,7 +42,15 @@ echo -e "${BLUE}Étape 2/5: Vérification de la base SampleDW...${NC}"
 DB_EXISTS=$(sqlcmd -S "$SQL_SERVER" -U "$SQL_USER" -P "$SQL_PASSWORD" -Q "SELECT name FROM sys.databases WHERE name = 'SampleDW'" -h -1 -C 2>/dev/null | tr -d '[:space:]')
 if [ -z "$DB_EXISTS" ]; then
     echo -e "${YELLOW}Base SampleDW non trouvée, création...${NC}"
-    sqlcmd -S "$SQL_SERVER" -U "$SQL_USER" -P "$SQL_PASSWORD" -d master -i init-sql-server.sql -C
+    # Try both possible locations for init-sql-server.sql
+    if [ -f ".devcontainer/sql-init/init-sql-server.sql" ]; then
+        sqlcmd -S "$SQL_SERVER" -U "$SQL_USER" -P "$SQL_PASSWORD" -d master -i .devcontainer/sql-init/init-sql-server.sql -C
+    elif [ -f "init-sql-server.sql" ]; then
+        sqlcmd -S "$SQL_SERVER" -U "$SQL_USER" -P "$SQL_PASSWORD" -d master -i init-sql-server.sql -C
+    else
+        echo -e "${RED}✗ init-sql-server.sql not found${NC}"
+        exit 1
+    fi
     echo -e "${GREEN}✓ Base SampleDW créée!${NC}"
 else
     echo -e "${GREEN}✓ Base SampleDW existe déjà${NC}"

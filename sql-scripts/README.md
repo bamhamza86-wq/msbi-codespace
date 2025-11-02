@@ -36,10 +36,14 @@ This directory contains SQL scripts for setting up and managing the MSBI data wa
 
 ### Quick Setup (All-in-One)
 
+**Note:** The setup-complete.sql script uses `:r` commands which require running from the sql-scripts directory.
+
 ```bash
-cd /workspaces/msbi-codespace
-sqlcmd -S localhost -U sa -P Passw0rd123! -d SampleDW -i sql-scripts/setup-complete.sql -C
+cd /workspaces/msbi-codespace/sql-scripts
+sqlcmd -S localhost -U sa -P Passw0rd123! -d SampleDW -i setup-complete.sql -C
 ```
+
+**Alternative:** Run individual scripts from the workspace root (see below).
 
 ### Individual Scripts
 
