@@ -1,0 +1,11 @@
+CustomerID,FirstName,LastName,Email,Phone,City,Country,RegistrationDate
+1,Jean,Dupont,jean.dupont@example.fr,+33123456789,Paris,France,2024-01-15
+2,Marie,Martin,marie.martin@example.fr,+33123456790,Lyon,France,2024-01-16
+3,Pierre,Bernard,pierre.bernard@example.fr,+33123456791,Marseille,France,2024-01-17
+4,Sophie,Dubois,sophie.dubois@example.fr,+33123456792,Toulouse,France,2024-01-18
+5,Luc,Thomas,luc.thomas@example.fr,+33123456793,Nice,France,2024-01-19
+6,Emma,Robert,emma.robert@example.fr,+33123456794,Nantes,France,2024-01-20
+7,Julie,Petit,julie.petit@example.fr,+33123456795,Strasbourg,France,2024-01-21
+8,Nicolas,Durand,nicolas.durand@example.fr,+33123456796,Montpellier,France,2024-01-22
+9,Camille,Leroy,camille.leroy@example.fr,+33123456797,Bordeaux,France,2024-01-23
+10,Antoine,Moreau,antoine.moreau@example.fr,+33123456798,Lille,France,2024-01-24
