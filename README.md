@@ -4,6 +4,22 @@ Environnement complet **SQL Server 2022** + **SSIS** + **Oracle** pour GitHub Co
 
 ## 🚀 Démarrage Rapide
 
+### Configuration Complète en Une Commande
+
+```bash
+# Setup automatique complet (recommandé)
+./quick-setup.sh
+```
+
+Ce script configure automatiquement:
+- ✅ Base de données SampleDW
+- ✅ Tables (Customers, Products, Orders)
+- ✅ Données d'exemple (10 clients, 10 produits, 10 commandes)
+- ✅ Vues analytiques
+- ✅ Procédures stockées
+
+📖 **Guide détaillé:** [CONFIGURATION.md](CONFIGURATION.md)
+
 ### Services Disponibles
 
 | Service | Host | Port | User | Password |
@@ -23,6 +39,9 @@ sqlcmd -S localhost -U sa -P Passw0rd123! -Q "SELECT @@VERSION" -C
 
 # Lister les bases de données
 sqlcmd -S localhost -U sa -P Passw0rd123! -Q "SELECT name FROM sys.databases" -C
+
+# Vérifier les données
+sqlcmd -S localhost -U sa -P Passw0rd123! -d SampleDW -Q "SELECT * FROM vw_OrderSummary" -C
 ```
 
 ## 📁 Structure du Projet
@@ -32,12 +51,25 @@ sqlcmd -S localhost -U sa -P Passw0rd123! -Q "SELECT name FROM sys.databases" -C
 ├── .devcontainer/
 │   ├── devcontainer.json      # Configuration Codespace
 │   ├── docker-compose.yml     # Services Docker
-│   └── setup.sh               # Script d'initialisation
-├── sql-init/
-│   └── init-sql-server.sql    # Scripts SQL d'initialisation
-├── ssis-packages/             # Vos packages SSIS (.dtsx)
+│   ├── setup.sh               # Script d'initialisation
+│   └── sql-init/              # Scripts SQL d'initialisation
+│       └── init-sql-server.sql
+├── ssis-packages/             # Packages SSIS (.dtsx)
+│   └── README.md              # Guide SSIS
 ├── sql-scripts/               # Scripts SQL réutilisables
-├── data/                      # Données de test
+│   ├── create-tables.sql      # Création des tables
+│   ├── load-sample-data.sql   # Insertion des données
+│   ├── create-views.sql       # Vues analytiques
+│   ├── create-stored-procedures.sql
+│   ├── setup-complete.sql     # Setup complet
+│   └── README.md
+├── data/                      # Données de test (CSV)
+│   ├── customers.csv          # 10 clients
+│   ├── products.csv           # 10 produits
+│   ├── orders.csv             # 10 commandes
+│   └── README.md
+├── quick-setup.sh             # 🚀 Setup automatique
+├── CONFIGURATION.md           # 📖 Guide complet
 └── README.md
 ```
 
