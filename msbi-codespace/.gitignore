@@ -1,0 +1,43 @@
+# MSBI Project .gitignore
+
+# Data directories
+data/
+mssql-data/
+oracle-data/
+
+# Log files
+*.log
+
+# SQL Server files
+*.bak
+*.trn
+*.mdf
+*.ldf
+
+# Sensitive files
+.env
+.env.local
+secrets/
+*.key
+
+# IDE
+.vscode/
+.vs/
+*.user
+*.suo
+.DS_Store
+
+# Temp files
+*.tmp
+temp/
+tmp/
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+env/
+
+# Node
+node_modules/
+npm-debug.log
