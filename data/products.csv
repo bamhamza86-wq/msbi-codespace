@@ -1,0 +1,11 @@
+ProductID,ProductName,Category,Price,Stock,SupplierID
+101,Laptop Dell XPS,Electronics,1299.99,45,1001
+102,iPhone 15 Pro,Electronics,1199.99,120,1002
+103,Samsung Galaxy S24,Electronics,999.99,85,1002
+104,Sony Headphones WH-1000XM5,Electronics,399.99,200,1003
+105,MacBook Pro M3,Electronics,2499.99,30,1001
+106,iPad Air,Electronics,699.99,150,1002
+107,Logitech MX Master 3,Electronics,99.99,300,1004
+108,Dell Monitor 27",Electronics,349.99,75,1001
+109,Mechanical Keyboard,Electronics,149.99,180,1004
+110,Webcam Logitech C920,Electronics,79.99,220,1004

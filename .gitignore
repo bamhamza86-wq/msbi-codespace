@@ -1,9 +1,11 @@
 # MSBI Project .gitignore
 
-# Data directories
-data/
+# Docker volume data directories (exclude container data)
 mssql-data/
 oracle-data/
+
+# User data (keep sample data in data/ directory)
+# data/
 
 # Log files
 *.log
