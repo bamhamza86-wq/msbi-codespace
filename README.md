@@ -41,6 +41,11 @@ sqlcmd -S localhost -U sa -P Passw0rd123! -Q "SELECT name FROM sys.databases" -C
 └── README.md
 ```
 
+### Scripts SQL
+
+- `sql-scripts/advanced-index-optimizer-v3.sql`  
+  Analyse avancee des indexes, A/B test, Query Store, et recommandations CCI/NCCI.
+
 ## 🛠️ Commandes Utiles
 
 ### SQL Server
