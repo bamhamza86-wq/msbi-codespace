@@ -25,6 +25,17 @@ sqlcmd -S localhost -U sa -P Passw0rd123! -Q "SELECT @@VERSION" -C
 sqlcmd -S localhost -U sa -P Passw0rd123! -Q "SELECT name FROM sys.databases" -C
 ```
 
+## 🧠 Optimisation Avancée SQL Server (Nouveau)
+
+Un module d'optimisation heuristique avancé est disponible dans `msbi-codespace/optimization/`.
+
+**Outils disponibles :**
+1. **`advanced_index_optimization_v3.sql`** : Script d'analyse complet (One-Click) pour :
+   - 🧪 A/B Testing d'indexes (Désactivation vs Drop)
+   - ⚡ Analyse des INSERTs lents (Plan Cache)
+   - 🏛️ Conseils architecturaux (Columnstore/CCI)
+2. **`setup_monitoring_infrastructure.sql`** : Infrastructure pour l'historisation des perfs et le suivi d'évolution.
+
 ## 📁 Structure du Projet
 
 ```
@@ -35,6 +46,9 @@ sqlcmd -S localhost -U sa -P Passw0rd123! -Q "SELECT name FROM sys.databases" -C
 │   └── setup.sh               # Script d'initialisation
 ├── sql-init/
 │   └── init-sql-server.sql    # Scripts SQL d'initialisation
+├── optimization/              # ⚡ NOUVEAU: Scripts d'optimisation avancée
+│   ├── advanced_index_optimization_v3.sql
+│   └── setup_monitoring_infrastructure.sql
 ├── ssis-packages/             # Vos packages SSIS (.dtsx)
 ├── sql-scripts/               # Scripts SQL réutilisables
 ├── data/                      # Données de test
