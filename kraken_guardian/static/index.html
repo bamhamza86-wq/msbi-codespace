@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kraken Guardian · Trading Intelligence</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header><div class="brand"><div class="logo">KG</div><div><b>KRAKEN GUARDIAN</b><span>TRADING INTELLIGENCE</span></div></div><div class="system"><i></i><span id="system">INITIALISATION</span></div></header>
+  <main>
+    <section class="hero"><div><p class="eyebrow">AUTOMATION CENTER · SPOT MARKET</p><h1>Contrôle intelligent.<br><em>Risque maîtrisé.</em></h1><p class="subtitle">Analyse automatique des marchés Kraken, scoring multifactoriel et allocation prudente en continu.</p></div><div class="hero-side"><div id="mode" class="mode">MODE PAPER</div><button id="scan">↻ ANALYSER MAINTENANT</button><small id="last-scan">Dernière analyse : —</small></div></section>
+    <section class="notice"><b>BOUCLIER DE RISQUE ACTIF</b><span>Les performances ne sont jamais garanties. Le mode simulation est activé par défaut et aucun ordre réel n'est envoyé sans confirmation explicite.</span></section>
+    <section class="metrics">
+      <article><label>CAPITAL SIMULÉ</label><strong id="equity">—</strong><span>valorisation actuelle</span></article>
+      <article><label>PERFORMANCE</label><strong id="pnl">—</strong><span id="pnl-pct">depuis le démarrage</span></article>
+      <article><label>POSITIONS</label><strong id="positions">—</strong><span id="positions-max">limite prudente</span></article>
+      <article><label>UNIVERS</label><strong id="universe">—</strong><span>actifs USD détectés</span></article>
+    </section>
+    <section class="grid">
+      <div class="panel span2"><div class="panel-head"><div><p class="eyebrow">OPPORTUNITY RADAR</p><h2>Marchés prioritaires</h2></div><span id="next-scan" class="pill">AUTO · —</span></div><div class="table-wrap"><table><thead><tr><th>ACTIF</th><th>PRIX</th><th>24 H</th><th>RSI</th><th>SCORE</th><th>DÉCISION</th></tr></thead><tbody id="signals"></tbody></table></div></div>
+      <aside class="panel risk"><p class="eyebrow">RISK ENGINE</p><h2>Profil modéré</h2><div class="gauge"><div><b id="risk-score">0,75%</b><span>RISQUE / TRADE</span></div></div><ul><li><span>Stop-loss systématique</span><b id="stop">—</b></li><li><span>Objectif de sortie</span><b id="target">—</b></li><li><span>Perte journalière max.</span><b id="max-loss">—</b></li><li><span>Circuit breaker</span><b id="lock">ARMÉ</b></li></ul></aside>
+      <div class="panel span2"><div class="panel-head"><div><p class="eyebrow">PORTFOLIO</p><h2>Positions ouvertes</h2></div></div><div id="open-positions" class="cards"></div></div>
+      <aside class="panel setup"><p class="eyebrow">CONNEXION</p><h2>Configuration minimale</h2><div class="setup-step ok"><b>01</b><span><strong>Données publiques</strong><small>Automatique, sans clé API</small></span></div><div class="setup-step"><b>02</b><span><strong>Connexion Kraken Pro</strong><small>Clé API + secret uniquement</small></span></div><div class="setup-step"><b>03</b><span><strong>Activation du réel</strong><small>Verrouillée par double confirmation</small></span></div><p class="fine">Ne fournissez jamais de permission de retrait. Créez une clé dédiée au bot.</p></aside>
+    </section>
+  </main><footer>Kraken Guardian <span>·</span> Système d'aide à la décision <span>·</span> Pas un conseil financier</footer>
+  <script src="/app.js"></script>
+</body></html>
