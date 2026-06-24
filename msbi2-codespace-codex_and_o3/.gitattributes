@@ -3,5 +3,6 @@
 *.yml text eol=lf
 *.sql text eol=lf
 *.biml text eol=lf
+*.dtsx text eol=lf
 *.rdl text eol=lf
 *.bim text eol=lf

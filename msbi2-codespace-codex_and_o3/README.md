@@ -48,7 +48,7 @@ flowchart LR
 
 - `compose.yaml` : SQL Server 2022 pour Codespace/local avec volumes Docker nommes.
 - `sql/` : creation `DW`, donnees source, procedures delta, validation.
-- `ssis/` : source Biml du package SSIS `LoadDWDelta` et notes de generation.
+- `ssis/` : package SSIS `LoadDWDelta.dtsx`, source Biml et notes d'execution.
 - `ssas/` : modele tabulaire `model.bim`; le script Windows le transforme en TMSL de deploiement.
 - `ssrs/` : rapports RDL `SalesByRegion`, `MonthlySales`, `TopCustomers`.
 - `scripts/` : deploiement, delta, validation, smoke test, deploiement et validation Windows BI.
@@ -80,12 +80,11 @@ Sur une machine Windows avec SQL Server tooling :
 Le script Windows :
 
 - verifie la connexion SQL ;
-- documente l'execution SSIS attendue avec `dtexec` ;
+- execute `ssis/LoadDWDelta.dtsx` avec `dtexec` si le runtime SSIS est present ;
 - deploie le modele SSAS via `Invoke-ASCmd` si le module `SqlServer` est present ;
 - publie les RDL via `ReportingServicesTools` si le module est present.
 
-Pour une validation stricte sur une machine Windows BI, generez le package SSIS
-depuis `ssis/LoadDWDelta.biml` vers `ssis/LoadDWDelta.dtsx`, puis executez :
+Pour une validation stricte sur une machine Windows BI, executez :
 
 ```powershell
 .\scripts\validate-windows-bi.ps1 `
@@ -97,8 +96,8 @@ depuis `ssis/LoadDWDelta.biml` vers `ssis/LoadDWDelta.dtsx`, puis executez :
 ```
 
 Cette commande echoue si la DW n'a pas les resultats attendus, si `dtexec.exe`
-ne peut pas executer le package delta, si le modele SSAS ne repond pas a une
-requete DAX, ou si SSRS ne rend pas le rapport `SalesByRegion` en PDF.
+ne peut pas executer `ssis/LoadDWDelta.dtsx`, si le modele SSAS ne repond pas a
+une requete DAX, ou si SSRS ne rend pas le rapport `SalesByRegion` en PDF.
 
 ## Verification CI
 
