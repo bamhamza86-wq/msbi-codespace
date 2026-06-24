@@ -20,7 +20,7 @@ Objectif couvert :
 ```bash
 cd msbi2-codespace-codex_and_o3
 cp .env.example .env
-./scripts/smoke-test.sh
+bash ./scripts/smoke-test.sh
 ```
 
 Le smoke test :
@@ -104,7 +104,7 @@ requete DAX, ou si SSRS ne rend pas le rapport `SalesByRegion` en PDF.
 
 ```bash
 python -m unittest discover -s msbi2-codespace-codex_and_o3/tests -v
-cd msbi2-codespace-codex_and_o3 && ./scripts/smoke-test.sh
+cd msbi2-codespace-codex_and_o3 && bash ./scripts/smoke-test.sh
 ```
 
 Le workflow GitHub `MSBI2 validation` execute les tests statiques et le smoke

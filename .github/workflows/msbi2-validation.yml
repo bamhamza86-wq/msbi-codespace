@@ -29,4 +29,4 @@ jobs:
       - name: Run SQL Server DW delta smoke test
         run: |
           cd msbi2-codespace-codex_and_o3
-          ./scripts/smoke-test.sh
+          bash ./scripts/smoke-test.sh

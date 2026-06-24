@@ -95,7 +95,7 @@ class Msbi2ArtifactTests(unittest.TestCase):
         workflow_text = workflow.read_text(encoding="utf-8")
         self.assertIn("artifact-validation", workflow_text)
         self.assertIn("sql-smoke-test", workflow_text)
-        self.assertIn("./scripts/smoke-test.sh", workflow_text)
+        self.assertIn("bash ./scripts/smoke-test.sh", workflow_text)
 
     def test_windows_bi_validation_requires_real_runtime(self):
         script = (PROJECT / "scripts" / "validate-windows-bi.ps1").read_text(encoding="utf-8")
