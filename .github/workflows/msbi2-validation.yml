@@ -1,0 +1,22 @@
+name: MSBI2 validation
+
+on:
+  push:
+    paths:
+      - "msbi2-codespace-codex_and_o3/**"
+      - ".github/workflows/msbi2-validation.yml"
+  pull_request:
+    paths:
+      - "msbi2-codespace-codex_and_o3/**"
+      - ".github/workflows/msbi2-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  artifact-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate shell scripts
+        run: find msbi2-codespace-codex_and_o3/scripts -name '*.sh' -print0 | xargs -0 -n1 bash -n
+      - name: Validate MSBI2 artifacts
+        run: python -m unittest discover -s msbi2-codespace-codex_and_o3/tests -v
