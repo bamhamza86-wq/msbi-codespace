@@ -46,12 +46,12 @@ flowchart LR
 
 ## Contenu
 
-- `compose.yaml` : SQL Server 2022 pour Codespace/local.
+- `compose.yaml` : SQL Server 2022 pour Codespace/local avec volumes Docker nommes.
 - `sql/` : creation `DW`, donnees source, procedures delta, validation.
 - `ssis/` : source Biml du package SSIS `LoadDWDelta` et notes de generation.
 - `ssas/` : modele tabulaire `model.bim`; le script Windows le transforme en TMSL de deploiement.
 - `ssrs/` : rapports RDL `SalesByRegion`, `MonthlySales`, `TopCustomers`.
-- `scripts/` : deploiement, delta, validation, smoke test, deploiement Windows BI.
+- `scripts/` : deploiement, delta, validation, smoke test, deploiement et validation Windows BI.
 - `tests/` : validations statiques executables en CI.
 
 ## Commandes utiles
@@ -84,11 +84,29 @@ Le script Windows :
 - deploie le modele SSAS via `Invoke-ASCmd` si le module `SqlServer` est present ;
 - publie les RDL via `ReportingServicesTools` si le module est present.
 
+Pour une validation stricte sur une machine Windows BI, generez le package SSIS
+depuis `ssis/LoadDWDelta.biml` vers `ssis/LoadDWDelta.dtsx`, puis executez :
+
+```powershell
+.\scripts\validate-windows-bi.ps1 `
+  -SqlServer "localhost,1433" `
+  -SqlUser "sa" `
+  -SqlPassword "Passw0rd123!" `
+  -SsasServer "localhost" `
+  -SsrsBaseUrl "http://localhost/ReportServer"
+```
+
+Cette commande echoue si la DW n'a pas les resultats attendus, si `dtexec.exe`
+ne peut pas executer le package delta, si le modele SSAS ne repond pas a une
+requete DAX, ou si SSRS ne rend pas le rapport `SalesByRegion` en PDF.
+
 ## Verification CI
 
 ```bash
 python -m unittest discover -s msbi2-codespace-codex_and_o3/tests -v
+cd msbi2-codespace-codex_and_o3 && ./scripts/smoke-test.sh
 ```
 
-Ces tests ne remplacent pas le smoke test SQL Server, mais ils garantissent que
-les artefacts attendus existent et que les modeles SSAS/SSRS restent parseables.
+Le workflow GitHub `MSBI2 validation` execute les tests statiques et le smoke
+test SQL Server. Les briques SSIS/SSAS/SSRS sont validees par
+`scripts/validate-windows-bi.ps1` sur un hote Windows disposant de ces services.

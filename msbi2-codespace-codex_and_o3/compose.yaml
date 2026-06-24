@@ -10,7 +10,7 @@ services:
       - "${MSSQL_TCP_PORT:-1433}:1433"
     volumes:
       - msbi2-mssql-data:/var/opt/mssql
-      - ./artifacts/backups:/var/opt/mssql/backup
+      - msbi2-mssql-backup:/var/opt/mssql/backup
     healthcheck:
       test:
         [
@@ -24,3 +24,4 @@ services:
 
 volumes:
   msbi2-mssql-data:
+  msbi2-mssql-backup:

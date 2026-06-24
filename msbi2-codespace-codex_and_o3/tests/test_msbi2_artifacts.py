@@ -19,6 +19,7 @@ class Msbi2ArtifactTests(unittest.TestCase):
             "ssrs/SalesByRegion.rdl",
             "ssrs/MonthlySales.rdl",
             "ssrs/TopCustomers.rdl",
+            "scripts/validate-windows-bi.ps1",
         ]
         for relative in expected:
             self.assertTrue((PROJECT / relative).is_file(), relative)
@@ -43,6 +44,12 @@ class Msbi2ArtifactTests(unittest.TestCase):
         ]
         for fragment in required_fragments:
             self.assertIn(fragment, sql)
+
+    def test_compose_uses_named_volumes_for_ci_stability(self):
+        compose = (PROJECT / "compose.yaml").read_text(encoding="utf-8")
+        self.assertIn("msbi2-mssql-data:/var/opt/mssql", compose)
+        self.assertIn("msbi2-mssql-backup:/var/opt/mssql/backup", compose)
+        self.assertNotIn("./artifacts/backups", compose)
 
     def test_ssis_biml_runs_delta_procedure(self):
         tree = ET.parse(PROJECT / "ssis" / "LoadDWDelta.biml")
@@ -82,6 +89,26 @@ class Msbi2ArtifactTests(unittest.TestCase):
             self.assertIn(view_name, xml_text)
             self.assertIn("<Tablix", xml_text)
             self.assertIn("=Fields!", xml_text)
+
+    def test_ci_runs_static_and_sql_smoke_validation(self):
+        workflow = PROJECT.parent / ".github" / "workflows" / "msbi2-validation.yml"
+        workflow_text = workflow.read_text(encoding="utf-8")
+        self.assertIn("artifact-validation", workflow_text)
+        self.assertIn("sql-smoke-test", workflow_text)
+        self.assertIn("./scripts/smoke-test.sh", workflow_text)
+
+    def test_windows_bi_validation_requires_real_runtime(self):
+        script = (PROJECT / "scripts" / "validate-windows-bi.ps1").read_text(encoding="utf-8")
+        required_fragments = [
+            "dtexec.exe",
+            "Invoke-ASCmd",
+            "Invoke-WebRequest",
+            "SSIS package",
+            "SSAS tabular validation OK",
+            "SSRS report validation OK",
+        ]
+        for fragment in required_fragments:
+            self.assertIn(fragment, script)
 
 
 if __name__ == "__main__":

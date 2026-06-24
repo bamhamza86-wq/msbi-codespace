@@ -9,8 +9,6 @@ if [[ ! -f .env ]]; then
   echo "Created .env from .env.example."
 fi
 
-mkdir -p artifacts/backups artifacts/logs
-
 compose up -d
 wait_for_sql
 
