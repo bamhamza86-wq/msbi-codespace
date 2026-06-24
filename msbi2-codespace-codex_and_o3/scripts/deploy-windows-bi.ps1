@@ -5,7 +5,10 @@ param(
     [string]$SsasServer = "localhost",
     [string]$SsrsBaseUrl = "http://localhost/ReportServer",
     [string]$SsasDatabase = "DW_Tabular",
-    [string]$ProjectRoot = (Split-Path -Parent $PSScriptRoot)
+    [string]$SsisPackagePath = "",
+    [string]$SsisConnectionManagerName = "DW",
+    [string]$ProjectRoot = (Split-Path -Parent $PSScriptRoot),
+    [switch]$SkipSsisExecution
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,6 +25,64 @@ function Test-SqlDw {
         throw "DW.dbo.FactSales is empty or unavailable."
     }
     Write-Host "DW SQL validation OK: $rows fact rows."
+}
+
+function Find-Dtexec {
+    $command = Get-Command dtexec.exe -ErrorAction SilentlyContinue
+    if ($command) {
+        return $command.Source
+    }
+
+    $candidates = Get-ChildItem "C:\Program Files\Microsoft SQL Server" -Recurse -Filter dtexec.exe -ErrorAction SilentlyContinue |
+        Sort-Object FullName -Descending |
+        Select-Object -First 1
+    if ($candidates) {
+        return $candidates.FullName
+    }
+
+    return $null
+}
+
+function Resolve-SsisPackage {
+    if (-not [string]::IsNullOrWhiteSpace($SsisPackagePath)) {
+        if (-not (Test-Path -LiteralPath $SsisPackagePath)) {
+            throw "SSIS package was provided but not found: $SsisPackagePath"
+        }
+        return (Resolve-Path -LiteralPath $SsisPackagePath).Path
+    }
+
+    $defaultPackage = Join-Path $ProjectRoot "ssis\LoadDWDelta.dtsx"
+    if (Test-Path -LiteralPath $defaultPackage) {
+        return (Resolve-Path -LiteralPath $defaultPackage).Path
+    }
+
+    throw "SSIS package not found. Expected ssis\LoadDWDelta.dtsx or pass -SsisPackagePath."
+}
+
+function Get-SsisConnectionString {
+    return "Provider=MSOLEDBSQL;Data Source=$SqlServer;Initial Catalog=DW;User ID=$SqlUser;Password=$SqlPassword;Trust Server Certificate=True;"
+}
+
+function Invoke-SsisDeltaLoad {
+    if ($SkipSsisExecution) {
+        Write-Warning "Skipping SSIS execution because -SkipSsisExecution was specified."
+        return
+    }
+
+    $dtexec = Find-Dtexec
+    if (-not $dtexec) {
+        Write-Warning "dtexec.exe was not found. Skipping SSIS package execution on this host."
+        return
+    }
+
+    $package = Resolve-SsisPackage
+    $ssisConnection = "{0};{1}" -f $SsisConnectionManagerName, (Get-SsisConnectionString)
+    & $dtexec /F $package /Connection $ssisConnection /REP E
+    if ($LASTEXITCODE -ne 0) {
+        throw "SSIS package failed through dtexec.exe with exit code $LASTEXITCODE."
+    }
+
+    Write-Host "SSIS delta package executed: $package"
 }
 
 function Deploy-SsasModel {
@@ -61,10 +122,7 @@ function Deploy-SsrsReports {
     Write-Host "SSRS reports uploaded to $folder."
 }
 
+Invoke-SsisDeltaLoad
 Test-SqlDw
-
-Write-Host "SSIS delta package source is in ssis\LoadDWDelta.biml."
-Write-Host "Generate the package with Biml tooling or map the Execute SQL Task to: EXEC etl.usp_LoadDeltaAll @BatchName = N'ssis-delta';"
-
 Deploy-SsasModel
 Deploy-SsrsReports

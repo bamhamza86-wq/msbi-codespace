@@ -7,6 +7,7 @@ param(
     [string]$SsrsBaseUrl = "http://localhost/ReportServer",
     [string]$SsrsFolder = "/MSBI2",
     [string]$SsisPackagePath = "",
+    [string]$SsisConnectionManagerName = "DW",
     [string]$ProjectRoot = (Split-Path -Parent $PSScriptRoot),
     [System.Management.Automation.PSCredential]$SsrsCredential,
     [switch]$SkipSsisExecution
@@ -84,7 +85,11 @@ function Resolve-SsisPackage {
         }
     }
 
-    throw "No compiled SSIS package was found. Generate ssis\LoadDWDelta.dtsx from ssis\LoadDWDelta.biml or pass -SsisPackagePath."
+    throw "SSIS package not found. Expected ssis\LoadDWDelta.dtsx or pass -SsisPackagePath."
+}
+
+function Get-SsisConnectionString {
+    return "Provider=MSOLEDBSQL;Data Source=$SqlServer;Initial Catalog=DW;User ID=$SqlUser;Password=$SqlPassword;Trust Server Certificate=True;"
 }
 
 function Assert-SsisDeltaPackage {
@@ -99,9 +104,10 @@ function Assert-SsisDeltaPackage {
     }
 
     $package = Resolve-SsisPackage
-    $process = Start-Process -FilePath $dtexec -ArgumentList @("/F", $package, "/REP", "E") -Wait -NoNewWindow -PassThru
-    if ($process.ExitCode -ne 0) {
-        throw "SSIS package failed through dtexec.exe with exit code $($process.ExitCode)."
+    $ssisConnection = "{0};{1}" -f $SsisConnectionManagerName, (Get-SsisConnectionString)
+    & $dtexec /F $package /Connection $ssisConnection /REP E
+    if ($LASTEXITCODE -ne 0) {
+        throw "SSIS package failed through dtexec.exe with exit code $LASTEXITCODE."
     }
 
     Write-Host "SSIS delta package validation OK: $package"

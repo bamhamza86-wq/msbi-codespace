@@ -15,6 +15,7 @@ class Msbi2ArtifactTests(unittest.TestCase):
             "sql/20_etl_delta_procs.sql",
             "sql/90_validation.sql",
             "ssis/LoadDWDelta.biml",
+            "ssis/LoadDWDelta.dtsx",
             "ssas/model.bim",
             "ssrs/SalesByRegion.rdl",
             "ssrs/MonthlySales.rdl",
@@ -57,6 +58,15 @@ class Msbi2ArtifactTests(unittest.TestCase):
         self.assertIn("LoadDWDelta", root_text)
         self.assertIn("etl.usp_LoadDeltaAll", root_text)
         self.assertIn("ExecuteSQL", root_text)
+
+    def test_ssis_dtsx_runs_delta_procedure(self):
+        tree = ET.parse(PROJECT / "ssis" / "LoadDWDelta.dtsx")
+        root_text = ET.tostring(tree.getroot(), encoding="unicode")
+        self.assertIn("LoadDWDelta", root_text)
+        self.assertIn("Package.ConnectionManagers[DW]", root_text)
+        self.assertIn("Microsoft.ExecuteSQLTask", root_text)
+        self.assertIn("etl.usp_LoadDeltaAll", root_text)
+        self.assertIn("FactSales is empty after SSIS delta load", root_text)
 
     def test_ssas_model_contains_star_schema(self):
         model = json.loads((PROJECT / "ssas" / "model.bim").read_text(encoding="utf-8"))
@@ -101,11 +111,25 @@ class Msbi2ArtifactTests(unittest.TestCase):
         script = (PROJECT / "scripts" / "validate-windows-bi.ps1").read_text(encoding="utf-8")
         required_fragments = [
             "dtexec.exe",
+            "/Connection",
+            "SsisConnectionManagerName",
             "Invoke-ASCmd",
             "Invoke-WebRequest",
             "SSIS package",
             "SSAS tabular validation OK",
             "SSRS report validation OK",
+        ]
+        for fragment in required_fragments:
+            self.assertIn(fragment, script)
+
+    def test_windows_deploy_script_executes_ssis_when_available(self):
+        script = (PROJECT / "scripts" / "deploy-windows-bi.ps1").read_text(encoding="utf-8")
+        required_fragments = [
+            "Invoke-SsisDeltaLoad",
+            "dtexec.exe",
+            "LoadDWDelta.dtsx",
+            "/Connection",
+            "SsisConnectionManagerName",
         ]
         for fragment in required_fragments:
             self.assertIn(fragment, script)

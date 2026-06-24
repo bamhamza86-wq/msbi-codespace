@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<DTS:Executable
+  xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+  DTS:refId="Package"
+  DTS:CreationDate="6/24/2026 17:00:00"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="CODEX"
+  DTS:CreatorName="Codex"
+  DTS:DTSID="{7E6EC71E-4C80-4D4C-947A-8E4F874C44F5}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="16.0.1000.6"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="LoadDWDelta"
+  DTS:PackageType="5"
+  DTS:VersionBuild="1"
+  DTS:VersionGUID="{A421C0C1-71B8-40D6-A4F1-7154F02F14D3}">
+  <DTS:Property DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[DW]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{E71F0363-9B92-42A8-8D25-2189973F225E}"
+      DTS:ObjectName="DW">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Provider=MSOLEDBSQL;Data Source={{SQL_SERVER}};Initial Catalog=DW;User ID={{SQL_USER}};Password={{SQL_PASSWORD}};Trust Server Certificate=True;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Run DW delta load"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{08DC45A3-315B-4BA4-964A-537AE55E57E0}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:ObjectName="Run DW delta load">
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{E71F0363-9B92-42A8-8D25-2189973F225E}"
+          SQLTask:ResultType="ResultSetType_None"
+          SQLTask:SqlStatementSource="EXEC etl.usp_LoadDeltaAll @BatchName = N'ssis-delta';"
+          SQLTask:SqlStatementSourceType="DirectInput"
+          SQLTask:TimeOut="0" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Validate DW delta load"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{A51D7CE4-A2E6-412C-AD5B-12E5A4690787}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:ObjectName="Validate DW delta load">
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{E71F0363-9B92-42A8-8D25-2189973F225E}"
+          SQLTask:ResultType="ResultSetType_None"
+          SQLTask:SqlStatementSource="DECLARE @FactRows int = (SELECT COUNT(*) FROM dw.FactSales); IF @FactRows &lt; 1 THROW 51001, 'FactSales is empty after SSIS delta load.', 1; SELECT @FactRows AS FactRows;"
+          SQLTask:SqlStatementSourceType="DirectInput"
+          SQLTask:TimeOut="0" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Run DW delta load to Validate DW delta load]"
+      DTS:CreationName=""
+      DTS:DTSID="{3A7F4B57-32C6-4AA5-B578-EFC684B18055}"
+      DTS:From="Package\Run DW delta load"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Run DW delta load to Validate DW delta load"
+      DTS:To="Package\Validate DW delta load"
+      DTS:Value="Success" />
+  </DTS:PrecedenceConstraints>
+</DTS:Executable>
