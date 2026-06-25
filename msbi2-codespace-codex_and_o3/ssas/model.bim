@@ -1,0 +1,92 @@
+{
+  "name": "DW_Tabular",
+  "compatibilityLevel": 1500,
+  "model": {
+    "culture": "en-US",
+    "dataSources": [
+      {
+        "type": "provider",
+        "name": "DW SQL Server",
+        "connectionString": "Provider=MSOLEDBSQL;Data Source={{SQL_SERVER}};Initial Catalog=DW;Integrated Security=SSPI;Trust Server Certificate=True;"
+      }
+    ],
+    "tables": [
+      {
+        "name": "Dim Date",
+        "columns": [
+          { "name": "DateKey", "dataType": "int64", "sourceColumn": "DateKey", "isHidden": true },
+          { "name": "FullDate", "dataType": "dateTime", "sourceColumn": "FullDate" },
+          { "name": "CalendarYear", "dataType": "int64", "sourceColumn": "CalendarYear" },
+          { "name": "MonthNumber", "dataType": "int64", "sourceColumn": "MonthNumber" },
+          { "name": "MonthName", "dataType": "string", "sourceColumn": "MonthName" }
+        ],
+        "partitions": [
+          { "name": "Dim Date", "source": { "type": "query", "dataSource": "DW SQL Server", "query": "SELECT DateKey, FullDate, CalendarYear, MonthNumber, MonthName FROM dw.DimDate" } }
+        ]
+      },
+      {
+        "name": "Dim Customer",
+        "columns": [
+          { "name": "CustomerKey", "dataType": "int64", "sourceColumn": "CustomerKey", "isHidden": true },
+          { "name": "CustomerId", "dataType": "string", "sourceColumn": "CustomerId" },
+          { "name": "CustomerName", "dataType": "string", "sourceColumn": "CustomerName" },
+          { "name": "Email", "dataType": "string", "sourceColumn": "Email" },
+          { "name": "RegionCode", "dataType": "string", "sourceColumn": "RegionCode" }
+        ],
+        "partitions": [
+          { "name": "Dim Customer", "source": { "type": "query", "dataSource": "DW SQL Server", "query": "SELECT CustomerKey, CustomerId, CustomerName, Email, RegionCode FROM dw.DimCustomer" } }
+        ]
+      },
+      {
+        "name": "Dim Product",
+        "columns": [
+          { "name": "ProductKey", "dataType": "int64", "sourceColumn": "ProductKey", "isHidden": true },
+          { "name": "ProductCode", "dataType": "string", "sourceColumn": "ProductCode" },
+          { "name": "ProductName", "dataType": "string", "sourceColumn": "ProductName" },
+          { "name": "Category", "dataType": "string", "sourceColumn": "Category" },
+          { "name": "StandardPrice", "dataType": "decimal", "sourceColumn": "StandardPrice" }
+        ],
+        "partitions": [
+          { "name": "Dim Product", "source": { "type": "query", "dataSource": "DW SQL Server", "query": "SELECT ProductKey, ProductCode, ProductName, Category, StandardPrice FROM dw.DimProduct" } }
+        ]
+      },
+      {
+        "name": "Dim Region",
+        "columns": [
+          { "name": "RegionKey", "dataType": "int64", "sourceColumn": "RegionKey", "isHidden": true },
+          { "name": "RegionCode", "dataType": "string", "sourceColumn": "RegionCode" },
+          { "name": "RegionName", "dataType": "string", "sourceColumn": "RegionName" }
+        ],
+        "partitions": [
+          { "name": "Dim Region", "source": { "type": "query", "dataSource": "DW SQL Server", "query": "SELECT RegionKey, RegionCode, RegionName FROM dw.DimRegion" } }
+        ]
+      },
+      {
+        "name": "Fact Sales",
+        "columns": [
+          { "name": "SalesKey", "dataType": "int64", "sourceColumn": "SalesKey", "isHidden": true },
+          { "name": "SalesOrderId", "dataType": "string", "sourceColumn": "SalesOrderId" },
+          { "name": "DateKey", "dataType": "int64", "sourceColumn": "DateKey", "isHidden": true },
+          { "name": "CustomerKey", "dataType": "int64", "sourceColumn": "CustomerKey", "isHidden": true },
+          { "name": "ProductKey", "dataType": "int64", "sourceColumn": "ProductKey", "isHidden": true },
+          { "name": "RegionKey", "dataType": "int64", "sourceColumn": "RegionKey", "isHidden": true },
+          { "name": "Quantity", "dataType": "int64", "sourceColumn": "Quantity", "summarizeBy": "sum" },
+          { "name": "SalesAmount", "dataType": "decimal", "sourceColumn": "SalesAmount", "summarizeBy": "sum" }
+        ],
+        "measures": [
+          { "name": "Total Sales", "expression": "SUM('Fact Sales'[SalesAmount])", "formatString": "#,0.00" },
+          { "name": "Sales Count", "expression": "COUNTROWS('Fact Sales')", "formatString": "#,0" }
+        ],
+        "partitions": [
+          { "name": "Fact Sales", "source": { "type": "query", "dataSource": "DW SQL Server", "query": "SELECT SalesKey, SalesOrderId, DateKey, CustomerKey, ProductKey, RegionKey, Quantity, SalesAmount FROM dw.FactSales" } }
+        ]
+      }
+    ],
+    "relationships": [
+      { "name": "FactSales_DimDate", "fromTable": "Fact Sales", "fromColumn": "DateKey", "toTable": "Dim Date", "toColumn": "DateKey" },
+      { "name": "FactSales_DimCustomer", "fromTable": "Fact Sales", "fromColumn": "CustomerKey", "toTable": "Dim Customer", "toColumn": "CustomerKey" },
+      { "name": "FactSales_DimProduct", "fromTable": "Fact Sales", "fromColumn": "ProductKey", "toTable": "Dim Product", "toColumn": "ProductKey" },
+      { "name": "FactSales_DimRegion", "fromTable": "Fact Sales", "fromColumn": "RegionKey", "toTable": "Dim Region", "toColumn": "RegionKey" }
+    ]
+  }
+}

@@ -1,137 +1,70 @@
-# MSBI Environment - GitHub Codespaces Setup
+# Kraken Guardian
 
-Environnement complet **SQL Server 2022** + **SSIS** + **Oracle** pour GitHub Codespaces.
+Tableau de bord autonome de veille crypto pour Kraken Pro. L'application détecte automatiquement les marchés Spot en USD, analyse les actifs liquides, attribue un score multifactoriel explicable et simule une allocation prudente en continu. Elle remplace l'ancien environnement de démonstration MSBI à la racine du dépôt.
 
-## 🚀 Démarrage Rapide
+> **Important :** aucun algorithme ne garantit des gains journaliers. Kraken Guardian est fourni comme outil d'analyse et de simulation. Le mode paper est activé par défaut. Faites valider toute stratégie, effectuez des backtests et consultez un professionnel qualifié avant d'exposer du capital réel.
 
-### Services Disponibles
+## Ce que l'application automatise
 
-| Service | Host | Port | User | Password |
-|---------|------|------|------|----------|
-| **SQL Server 2022** | localhost | 1433 | sa | Passw0rd123! |
-| **Oracle Database** | localhost | 1521 | system | Oracle_123 |
-| **SSIS Runtime** | CLI | - | - | - |
+- découverte des paires Spot Kraken négociables via l'API publique `AssetPairs` ;
+- classement des marchés USD par volume ;
+- récupération de l'OHLC et des tickers publics ;
+- scoring tendance, momentum, RSI et volatilité ;
+- simulation d'entrées avec dimensionnement selon le budget de risque ;
+- stop-loss, take-profit, nombre maximum de positions et circuit breaker de perte ;
+- stockage local SQLite des positions et transactions simulées ;
+- dashboard web rafraîchi automatiquement et analyse manuelle à la demande.
 
-### Vérifier les Services
+## Informations minimales à fournir
 
-```bash
-# Vérifier les conteneurs
-docker ps
+### Pour commencer immédiatement en simulation
 
-# Tester SQL Server
-sqlcmd -S localhost -U sa -P Passw0rd123! -Q "SELECT @@VERSION" -C
+**Aucune information personnelle et aucune clé API.** Les données publiques Kraken sont récupérées automatiquement.
 
-# Lister les bases de données
-sqlcmd -S localhost -U sa -P Passw0rd123! -Q "SELECT name FROM sys.databases" -C
-```
+### Pour connecter un compte Kraken Pro
 
-## 📁 Structure du Projet
-
-```
-.
-├── .devcontainer/
-│   ├── devcontainer.json      # Configuration Codespace
-│   ├── docker-compose.yml     # Services Docker
-│   └── setup.sh               # Script d'initialisation
-├── sql-init/
-│   └── init-sql-server.sql    # Scripts SQL d'initialisation
-├── ssis-packages/             # Vos packages SSIS (.dtsx)
-├── sql-scripts/               # Scripts SQL réutilisables
-├── data/                      # Données de test
-└── README.md
-```
-
-## 🛠️ Commandes Utiles
-
-### SQL Server
+Créez une clé API dédiée et fournissez uniquement ces deux variables d'environnement :
 
 ```bash
-# Exécuter une requête
-sqlcmd -S localhost -U sa -P Passw0rd123! -Q "SELECT @@VERSION" -C
-
-# Créer une base de données
-sqlcmd -S localhost -U sa -P Passw0rd123! -Q "CREATE DATABASE TestDB" -C
-
-# Exécuter un script SQL
-sqlcmd -S localhost -U sa -P Passw0rd123! -i script.sql -C
+KRAKEN_API_KEY=...
+KRAKEN_API_SECRET=...
 ```
 
-### PowerShell & SQL Server
+N'accordez **jamais** la permission de retrait. Pour une future connexion privée de lecture seule, limitez la clé à la consultation des fonds et à la consultation des ordres et transactions ouverts/fermés. L'application actuelle ne transmet aucun ordre réel : le double verrou débloque uniquement un état de validation supervisée, mais l'exécution reste volontairement en simulation tant qu'un workflow de validation, de backtest et de déploiement supervisé n'a pas été accepté.
 
-```powershell
-# Importer le module SqlServer
-Import-Module SqlServer
+## Démarrage
 
-# Se connecter
-$serverInstance = "localhost"
-$database = "master"
+Python 3.11+ suffit ; aucune dépendance externe n'est requise.
 
-# Exécuter une requête
-Invoke-Sqlcmd -ServerInstance $serverInstance -Database $database -Query "SELECT @@VERSION"
-```
-
-## 🔌 Intégration SQL Server ↔ Oracle
-
-### Via Linked Server (T-SQL)
-
-```sql
--- Créer un linked server vers Oracle
-EXEC sp_addlinkedserver 
-    @server = 'ORACLE_LINK',
-    @srvproduct = 'Oracle',
-    @provider = 'OraOLEDB.Oracle',
-    @datasrc = 'localhost:1521/FREEPDB1';
-
--- Tester
-SELECT * FROM OPENQUERY(ORACLE_LINK, 'SELECT * FROM dual');
-```
-
-## ⚠️ Notes Importantes
-
-### SSAS Non Disponible
-SQL Server Analysis Services (SSAS) n'est pas disponible sur Linux/Codespaces.
-
-**Alternatives :**
-- Power BI Desktop (connexion à SQL Server)
-- Azure Analysis Services
-- Alternatives open-source (ClickHouse, Apache Kylin)
-
-### Performance
-- Codespaces est optimisé pour le développement
-- Pour du traitement ETL lourd, considérez une VM Azure
-- Oracle peut prendre 2-5 minutes au premier démarrage
-
-### Sécurité
-⚠️ Les mots de passe par défaut sont pour le développement uniquement.
-En production, utilisez des mots de passe forts et des variables d'environnement.
-
-## 🐛 Dépannage
-
-### SQL Server ne démarre pas
 ```bash
-docker logs mssql-dev
-docker restart mssql-dev
+cp .env.example .env
+set -a && source .env && set +a
+python -m kraken_guardian.server --port 8080
 ```
 
-### Oracle lent au démarrage
+Ouvrez ensuite <http://localhost:8080>.
+
+## Tests
+
 ```bash
-# Normal, patientez 2-5 minutes
-docker logs oracle-dev
+python -m unittest discover -s tests -v
 ```
 
-### Permission denied
-```bash
-chmod +x .devcontainer/setup.sh
-```
+## Architecture
 
-## 📚 Ressources
+| Module | Rôle |
+|---|---|
+| `kraken_guardian/kraken.py` | Client REST Kraken public et privé, signature HMAC comprise |
+| `kraken_guardian/strategy.py` | Indicateurs et score multifactoriel explicable |
+| `kraken_guardian/engine.py` | Scanner automatique, dimensionnement et garde-fous |
+| `kraken_guardian/storage.py` | Persistance SQLite |
+| `kraken_guardian/server.py` | Serveur HTTP et API JSON sans dépendance |
+| `kraken_guardian/static/` | Dashboard responsive |
 
-- [SQL Server on Linux](https://learn.microsoft.com/en-us/sql/linux/)
-- [GitHub Codespaces Docs](https://docs.github.com/en/codespaces)
-- [Docker Compose](https://docs.docker.com/compose/)
+## Références Kraken officielles
 
----
-
-**Prêt à utiliser! 🚀**
-
-Repository: https://github.com/bamhamza86-wq/msbi-codespace
+- [Introduction Spot REST](https://docs.kraken.com/api/docs/guides/spot-rest-intro/)
+- [Paires négociables](https://docs.kraken.com/api/docs/rest-api/get-tradable-asset-pairs/)
+- [Ticker](https://docs.kraken.com/api/docs/rest-api/get-ticker-information/)
+- [OHLC](https://docs.kraken.com/api/docs/rest-api/get-ohlc-data/)
+- [Ajouter un ordre](https://docs.kraken.com/api/docs/rest-api/add-order/)

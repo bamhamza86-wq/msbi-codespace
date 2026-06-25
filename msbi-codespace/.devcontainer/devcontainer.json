@@ -1,0 +1,55 @@
+{
+  "name": "MSBI Environment (SQL Server + SSIS + Oracle)",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "true"
+    },
+    "ghcr.io/devcontainers/features/powershell:1": {
+      "version": "latest"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "mssql.connections": [
+          {
+            "server": "mssql,1433",
+            "database": "master",
+            "authenticationType": "SqlLogin",
+            "user": "sa",
+            "password": "Passw0rd123!",
+            "savePassword": true,
+            "profileName": "SQL Server (Docker)"
+          }
+        ]
+      },
+      "extensions": [
+        "ms-mssql.mssql",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-mssql",
+        "ms-dotnettools.csharp",
+        "ms-powershell.powershell"
+      ]
+    }
+  },
+
+  "forwardPorts": [1433, 1521],
+  "portsAttributes": {
+    "1433": {
+      "label": "SQL Server",
+      "onAutoForward": "notify"
+    },
+    "1521": {
+      "label": "Oracle DB",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "remoteUser": "vscode"
+}

@@ -1,0 +1,21 @@
+<Biml xmlns="http://schemas.varigence.com/biml.xsd">
+  <Connections>
+    <OleDbConnection Name="DW" ConnectionString="Provider=MSOLEDBSQL;Data Source={{SQL_SERVER}};Initial Catalog=DW;User ID={{SQL_USER}};Password={{SQL_PASSWORD}};Trust Server Certificate=True;" />
+  </Connections>
+  <Packages>
+    <Package Name="LoadDWDelta" ConstraintMode="Linear" ProtectionLevel="EncryptSensitiveWithUserKey">
+      <Tasks>
+        <ExecuteSQL Name="Run DW delta load" ConnectionName="DW">
+          <DirectInput>EXEC etl.usp_LoadDeltaAll @BatchName = N'ssis-delta';</DirectInput>
+        </ExecuteSQL>
+        <ExecuteSQL Name="Validate DW delta load" ConnectionName="DW">
+          <DirectInput>
+DECLARE @FactRows int = (SELECT COUNT(*) FROM dw.FactSales);
+IF @FactRows &lt; 1 THROW 51001, 'FactSales is empty after SSIS delta load.', 1;
+SELECT @FactRows AS FactRows;
+          </DirectInput>
+        </ExecuteSQL>
+      </Tasks>
+    </Package>
+  </Packages>
+</Biml>
