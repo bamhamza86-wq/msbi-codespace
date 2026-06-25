@@ -21,6 +21,7 @@ class Msbi2ArtifactTests(unittest.TestCase):
             "ssrs/MonthlySales.rdl",
             "ssrs/TopCustomers.rdl",
             "scripts/validate-windows-bi.ps1",
+            "docs/windows-bi-acceptance.md",
         ]
         for relative in expected:
             self.assertTrue((PROJECT / relative).is_file(), relative)
@@ -106,6 +107,22 @@ class Msbi2ArtifactTests(unittest.TestCase):
         self.assertIn("artifact-validation", workflow_text)
         self.assertIn("sql-smoke-test", workflow_text)
         self.assertIn("bash ./scripts/smoke-test.sh", workflow_text)
+        self.assertIn("msbi2-windows-bi-acceptance.yml", workflow_text)
+
+    def test_manual_windows_bi_acceptance_workflow_requires_real_services(self):
+        workflow = PROJECT.parent / ".github" / "workflows" / "msbi2-windows-bi-acceptance.yml"
+        workflow_text = workflow.read_text(encoding="utf-8")
+        required_fragments = [
+            "workflow_dispatch",
+            "fromJSON(inputs.runner_labels)",
+            "MSBI2_SQL_PASSWORD",
+            "Get-Command dtexec.exe",
+            "ReportingServicesTools",
+            "deploy-windows-bi.ps1",
+            "validate-windows-bi.ps1",
+        ]
+        for fragment in required_fragments:
+            self.assertIn(fragment, workflow_text)
 
     def test_windows_bi_validation_requires_real_runtime(self):
         script = (PROJECT / "scripts" / "validate-windows-bi.ps1").read_text(encoding="utf-8")

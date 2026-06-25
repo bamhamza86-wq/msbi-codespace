@@ -5,10 +5,12 @@ on:
     paths:
       - "msbi2-codespace-codex_and_o3/**"
       - ".github/workflows/msbi2-validation.yml"
+      - ".github/workflows/msbi2-windows-bi-acceptance.yml"
   pull_request:
     paths:
       - "msbi2-codespace-codex_and_o3/**"
       - ".github/workflows/msbi2-validation.yml"
+      - ".github/workflows/msbi2-windows-bi-acceptance.yml"
   workflow_dispatch:
 
 jobs:

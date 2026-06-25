@@ -52,6 +52,7 @@ flowchart LR
 - `ssas/` : modele tabulaire `model.bim`; le script Windows le transforme en TMSL de deploiement.
 - `ssrs/` : rapports RDL `SalesByRegion`, `MonthlySales`, `TopCustomers`.
 - `scripts/` : deploiement, delta, validation, smoke test, deploiement et validation Windows BI.
+- `docs/windows-bi-acceptance.md` : prerequis et workflow d'acceptation SSIS/SSAS/SSRS sur runner Windows.
 - `tests/` : validations statiques executables en CI.
 
 ## Commandes utiles
@@ -109,3 +110,5 @@ cd msbi2-codespace-codex_and_o3 && bash ./scripts/smoke-test.sh
 Le workflow GitHub `MSBI2 validation` execute les tests statiques et le smoke
 test SQL Server. Les briques SSIS/SSAS/SSRS sont validees par
 `scripts/validate-windows-bi.ps1` sur un hote Windows disposant de ces services.
+Le workflow manuel `MSBI2 Windows BI acceptance` automatise cette validation sur
+un runner Windows self-hosted ; voir `docs/windows-bi-acceptance.md`.
