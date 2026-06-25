@@ -105,8 +105,8 @@ function Deploy-SsasModel {
     $modelPath = Join-Path $ProjectRoot "ssas\model.bim"
     $model = Get-Content $modelPath -Raw | ConvertFrom-Json
     $model.name = $SsasDatabase
-    $model.model.dataSources[0].connectionString =
-        $model.model.dataSources[0].connectionString.Replace("{{SQL_SERVER}}", $SqlServer)
+    $model.model.dataSources[0].connectionString = "Provider=MSOLEDBSQL;Data Source=$SqlServer;Initial Catalog=DW;User ID=$SqlUser;Password=$SqlPassword;Trust Server Certificate=True;"
+    $model.model.dataSources[0] | Add-Member -NotePropertyName "impersonationMode" -NotePropertyValue "impersonateServiceAccount" -Force
     $payload = @{
         createOrReplace = @{
             object = @{ database = $SsasDatabase }
@@ -115,8 +115,25 @@ function Deploy-SsasModel {
     }
     $temp = Join-Path $env:TEMP "msbi2-deploy-model.tmsl"
     $payload | ConvertTo-Json -Depth 100 | Set-Content -Path $temp -Encoding UTF8
-    Invoke-ASCmd -Server $SsasServer -InputFile $temp
-    Write-Host "SSAS model deployment submitted to $SsasServer."
+    $deployResult = Invoke-ASCmd -Server $SsasServer -InputFile $temp
+    if ($deployResult -match "<Error|<Exception") {
+        throw "SSAS model deployment failed: $deployResult"
+    }
+
+    $refreshPayload = @{
+        refresh = @{
+            type = "full"
+            objects = @(@{ database = $SsasDatabase })
+        }
+    }
+    $refreshTemp = Join-Path $env:TEMP "msbi2-refresh-model.tmsl"
+    $refreshPayload | ConvertTo-Json -Depth 20 | Set-Content -Path $refreshTemp -Encoding UTF8
+    $refreshResult = Invoke-ASCmd -Server $SsasServer -InputFile $refreshTemp
+    if ($refreshResult -match "<Error|<Exception") {
+        throw "SSAS model refresh failed: $refreshResult"
+    }
+
+    Write-Host "SSAS model deployed and refreshed on $SsasServer/$SsasDatabase."
 }
 
 function Deploy-SsrsReports {
@@ -126,9 +143,22 @@ function Deploy-SsrsReports {
     }
     Import-Module ReportingServicesTools -ErrorAction Stop
     $folder = "/MSBI2"
+    $ssrsSqlServer = if ($SqlServer -match "^(tcp|np|lpc):") { $SqlServer } else { "tcp:$SqlServer" }
     New-RsFolder -ReportServerUri $SsrsBaseUrl -Path "/" -Name "MSBI2" -ErrorAction SilentlyContinue | Out-Null
     Get-ChildItem (Join-Path $ProjectRoot "ssrs") -Filter *.rdl | ForEach-Object {
-        Write-RsCatalogItem -ReportServerUri $SsrsBaseUrl -Path $folder -Destination $_.Name -FilePath $_.FullName -Overwrite
+        Write-RsCatalogItem -ReportServerUri $SsrsBaseUrl -Path $_.FullName -RsFolder $folder -Name $_.BaseName -Overwrite
+        $reportPath = "$folder/$($_.BaseName)"
+        $dataSources = Get-RsItemDataSource -ReportServerUri $SsrsBaseUrl -RsItem $reportPath
+        foreach ($dataSource in $dataSources) {
+            $dataSource.Item.ConnectString = "Data Source=$ssrsSqlServer;Initial Catalog=DW;Encrypt=False;TrustServerCertificate=True"
+            $dataSource.Item.UseOriginalConnectString = $false
+            $dataSource.Item.CredentialRetrieval = "Store"
+            $dataSource.Item.Username = $SqlUser
+            $dataSource.Item.Password = $SqlPassword
+            $dataSource.Item.WindowsCredentials = $false
+            $dataSource.Item.ImpersonateUser = $false
+        }
+        Set-RsItemDataSource -ReportServerUri $SsrsBaseUrl -RsItem $reportPath -DataSource $dataSources
     }
     Write-Host "SSRS reports uploaded to $folder."
 }
