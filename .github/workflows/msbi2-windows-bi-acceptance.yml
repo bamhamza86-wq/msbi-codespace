@@ -1,0 +1,87 @@
+name: MSBI2 Windows BI acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner_labels:
+        description: JSON array for the self-hosted Windows BI runner labels.
+        required: true
+        default: '["self-hosted","Windows","msbi"]'
+      sql_server:
+        description: SQL Server host for the DW database.
+        required: true
+        default: "localhost,1433"
+      sql_user:
+        description: SQL login used by SSIS and validation scripts.
+        required: true
+        default: "sa"
+      ssas_server:
+        description: SSAS Tabular server name.
+        required: true
+        default: "localhost"
+      ssas_database:
+        description: SSAS Tabular database deployed by the acceptance run.
+        required: true
+        default: "DW_Tabular"
+      ssrs_base_url:
+        description: SSRS ReportServer endpoint.
+        required: true
+        default: "http://localhost/ReportServer"
+      ssrs_folder:
+        description: SSRS report folder.
+        required: true
+        default: "/MSBI2"
+
+jobs:
+  windows-bi-acceptance:
+    runs-on: ${{ fromJSON(inputs.runner_labels) }}
+    timeout-minutes: 45
+    env:
+      MSBI2_SQL_SERVER: ${{ inputs.sql_server }}
+      MSBI2_SQL_USER: ${{ inputs.sql_user }}
+      MSBI2_SQL_PASSWORD: ${{ secrets.MSBI2_SQL_PASSWORD }}
+      MSBI2_SSAS_SERVER: ${{ inputs.ssas_server }}
+      MSBI2_SSAS_DATABASE: ${{ inputs.ssas_database }}
+      MSBI2_SSRS_BASE_URL: ${{ inputs.ssrs_base_url }}
+      MSBI2_SSRS_FOLDER: ${{ inputs.ssrs_folder }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Windows BI prerequisites
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:MSBI2_SQL_PASSWORD)) {
+            throw "Configure the MSBI2_SQL_PASSWORD repository secret before running this workflow."
+          }
+          if (-not (Get-Command dtexec.exe -ErrorAction SilentlyContinue)) {
+            throw "dtexec.exe was not found. Install SQL Server Integration Services runtime on this runner."
+          }
+          if (-not (Get-Module -ListAvailable -Name SqlServer)) {
+            throw "PowerShell module SqlServer was not found. Install-Module SqlServer is required for SSAS validation."
+          }
+          if (-not (Get-Module -ListAvailable -Name ReportingServicesTools)) {
+            throw "PowerShell module ReportingServicesTools was not found. Install-Module ReportingServicesTools is required for SSRS upload."
+          }
+
+      - name: Deploy SSIS, SSAS, and SSRS artifacts
+        shell: pwsh
+        run: |
+          .\msbi2-codespace-codex_and_o3\scripts\deploy-windows-bi.ps1 `
+            -SqlServer $env:MSBI2_SQL_SERVER `
+            -SqlUser $env:MSBI2_SQL_USER `
+            -SqlPassword $env:MSBI2_SQL_PASSWORD `
+            -SsasServer $env:MSBI2_SSAS_SERVER `
+            -SsasDatabase $env:MSBI2_SSAS_DATABASE `
+            -SsrsBaseUrl $env:MSBI2_SSRS_BASE_URL
+
+      - name: Validate end-to-end Windows BI runtime
+        shell: pwsh
+        run: |
+          .\msbi2-codespace-codex_and_o3\scripts\validate-windows-bi.ps1 `
+            -SqlServer $env:MSBI2_SQL_SERVER `
+            -SqlUser $env:MSBI2_SQL_USER `
+            -SqlPassword $env:MSBI2_SQL_PASSWORD `
+            -SsasServer $env:MSBI2_SSAS_SERVER `
+            -SsasDatabase $env:MSBI2_SSAS_DATABASE `
+            -SsrsBaseUrl $env:MSBI2_SSRS_BASE_URL `
+            -SsrsFolder $env:MSBI2_SSRS_FOLDER
