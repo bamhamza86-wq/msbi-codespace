@@ -8,12 +8,23 @@ param(
     [string]$SsrsFolder = "/MSBI2",
     [string]$SsisPackagePath = "",
     [string]$SsisConnectionManagerName = "DW",
-    [string]$ProjectRoot = (Split-Path -Parent $PSScriptRoot),
+    [string]$ProjectRoot = "",
     [System.Management.Automation.PSCredential]$SsrsCredential,
     [switch]$SkipSsisExecution
 )
 
 $ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
+    $scriptRoot = if (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+        $PSScriptRoot
+    }
+    else {
+        Split-Path -Parent $MyInvocation.MyCommand.Path
+    }
+    $ProjectRoot = Split-Path -Parent $scriptRoot
+}
+$ProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
 
 function Invoke-DwScalar {
     param([Parameter(Mandatory = $true)][string]$Query)

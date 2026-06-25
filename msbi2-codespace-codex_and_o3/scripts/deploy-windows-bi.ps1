@@ -7,11 +7,22 @@ param(
     [string]$SsasDatabase = "DW_Tabular",
     [string]$SsisPackagePath = "",
     [string]$SsisConnectionManagerName = "DW",
-    [string]$ProjectRoot = (Split-Path -Parent $PSScriptRoot),
+    [string]$ProjectRoot = "",
     [switch]$SkipSsisExecution
 )
 
 $ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
+    $scriptRoot = if (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+        $PSScriptRoot
+    }
+    else {
+        Split-Path -Parent $MyInvocation.MyCommand.Path
+    }
+    $ProjectRoot = Split-Path -Parent $scriptRoot
+}
+$ProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
 
 function Test-SqlDw {
     $connectionString = "Server=$SqlServer;Database=DW;User Id=$SqlUser;Password=$SqlPassword;TrustServerCertificate=True;"

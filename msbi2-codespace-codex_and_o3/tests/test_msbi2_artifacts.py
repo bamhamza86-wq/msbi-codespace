@@ -130,6 +130,8 @@ class Msbi2ArtifactTests(unittest.TestCase):
             "dtexec.exe",
             "/Connection",
             "SsisConnectionManagerName",
+            "$MyInvocation.MyCommand.Path",
+            "Resolve-Path -LiteralPath $ProjectRoot",
             "Invoke-ASCmd",
             "Invoke-WebRequest",
             "SSIS package",
@@ -147,6 +149,8 @@ class Msbi2ArtifactTests(unittest.TestCase):
             "LoadDWDelta.dtsx",
             "/Connection",
             "SsisConnectionManagerName",
+            "$MyInvocation.MyCommand.Path",
+            "Resolve-Path -LiteralPath $ProjectRoot",
         ]
         for fragment in required_fragments:
             self.assertIn(fragment, script)
